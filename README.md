@@ -1,11 +1,20 @@
 # DDS
 ## 개요
-WebSocket을 통해 실시간 주가 데이터를 안정적으로 수집하고 ELK 스택을 통해 실시간 데이터 처리 및 분석 과 효율적 데이터 관리를 학습하고자 프로젝트를 구성했습니다.
+### 목적
+> 1. 실시간 데이터를 이용한 ELK-Stack 활용
+> 2. RDBMS 연동을 통한 데이터 보존 전략에 대한 고찰
 
+WebSocket을 통해 실시간 주가 데이터를 안정적으로 수집하고 ELK 스택을 통해 실시간 데이터 처리 및 분석하고, 효율적인 데이터 관리를 학습하고자 프로젝트를 구성했습니다.
+
+### 주가 데이터 선택 이유
+ELK-Stack의 최대 장점인 실시간, 대용량 데이터 처리와 더불어 시각화할 수 있는 도메인을 추려보다가 해당 조건을 만족할 수 있는 국내 주식의 주가 체결 정보를 선택하게 되었습니다. 
+
+실시간으로 추가되는 데이터와 히스토리 추적을 위한 데이터의 목적을 구분하여 
 단기 데이터는 Elasticsearch에 저장하여 빠른 검색과 시각화를 지원하고
-요약 데이터를 MySQL에 저장하여 장기 데이터 분석 및 백업을 관리할 수 있도록 아키텍쳐를 설계했습니다.
+히스토리 추적을 위한 요약 데이터는 MySQL로 이관, 저장하여 장기 데이터 분석 및 백업을 관리할 수 있도록 아키텍쳐를 설계했습니다.
 
 ---
+
 ## 팀원
 <table>
   <tbody>
@@ -188,12 +197,31 @@ output {
 --- 
 
 ## Troubleshooting
-
 ### Logstash 인스턴스 2개 실행 중 문제
+방법1. Logstash 인스턴스를 2개 생성하기 위해 폴더 구조를 나누고 실제 실행도 나누어서 하는 방법
+방법2. Logstash 실행시 파싱할 conf 파일 내에서 2가지 pipeline을 구성하여 1개의 인스턴스에서 실행하는 방법
 
 ### STCK_CNTG_HOUR값 mysql 이관 중 타입 오류
 
 DATETIME 포멧에 지원하지 않는 표현식으로 인한 예외 발생
+-> varchar(50)으로 적용시 문제 해결 가능 but 타입적인 문제는 없으나, 추후 Mysql에서 날짜 연산 시에 다시 파싱을 해야 연산이 가능한 문제가 예상되어 다음과 같이 Logstash conf 파일 내에서 filter 적용을 통해 ISO8601 형식을 DATETIME 형식으로 변환 후 insertion할 수 있었다.
+
+``` ruby
+filter {
+    ruby {
+        code => '
+            cntg_hour = event.get("STCK_CNTG_HOUR")
+            if cntg_hour
+                # ISO8601 형식을 MySQL DATETIME 형식으로 변환
+                formatted_time = Time.parse(cntg_hour).strftime("%Y-%m-%d %H:%M:%S")
+                event.set("STCK_CNTG_HOUR", formatted_time)
+            end
+        '
+    }
+} 
+```
+
+### 지정된 시간마다 지정한 갯수의 row가 아닌 전체 row를 추가하는 문제
 
 ---
 
