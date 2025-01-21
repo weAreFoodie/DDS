@@ -53,14 +53,9 @@ WebSocket을 통해 실시간 주가 데이터를 안정적으로 수집하고 E
 ## 아키텍처
 <img width="3280" alt="Untitled (1)" src="https://github.com/user-attachments/assets/499adbba-694b-4576-a87a-de47fe9d6a5d" />
 
-| name | version |
-|:--:|:--:|
-| FileBeat | 7.11.1 |
-| Logstash | 7.11.1 |
-| Elasticsearch | 7.11.1 |
-| Kibana | 7.11.1 |
-| Mysql | 7.11.1 | -> 수정 필요
-| Ubuntu | 7.11.1 | -> 수정 필요
+| name  | FileBeat | Logstash | Elasticsearch | Kibana | Mysql | Ubuntu |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| version | 7.11.1 | 7.11.1 | 7.11.1 | 7.11.1 | 7.11.1 | 7.11.1 |
 
 ---
 
