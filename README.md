@@ -92,6 +92,7 @@ output.logstash:
 ```
 
 ## 3. logstash로 전처리 후 elelasticsearch에 저장하기
+
 ### 3-1. message 필드를 ',' 분할하여 새로운 필드로 추가
 ```yml
 filter {
@@ -111,7 +112,7 @@ filter {
   ```
 
 ### 3-1. elelasticsearch 형식에 맞는 date 타입으로 변환
-- 한국 투자 증권에서 제공하는 주식 체결 시간이 string 타입으로 "142011"(시간:분:초)로 들어오고 있습니다.
+- 한국 투자 증권에서 제공하는 주식 체결 시간이 string 타입으로 "142011"(시간:분:초)로 들어오고 있음음
 - ruby를 사용하여 현재 날짜를 가져오고 string 타입을 hh:mm:ss 형식으로 변환 후 현재 날짜와 합쳐 필드에 추가
 ```yml
  ruby {
@@ -135,7 +136,8 @@ filter {
     target => "STCK_CNTG_HOUR"
   }
 ```
-### 3-3. 나머지 데이터 intger 타입으로 변경 및 사용하지 않는 필드 삭제
+
+### 3-3. 데이터 타입 변경 및 사용하지 않는 필드 삭제
 - 주식 현재가, 체결 거래량, 누적 거래량, 주식 최고가, 주식 최저가 integer로 변경
 - "ecs", "host", "@version", "agent", "log", "input", "message", "@timestamp" 필드 삭제
 
@@ -156,7 +158,8 @@ filter {
   }
 }
 ```
-### elelasticsearch에 stock index로 저장
+
+### 3-4. elelasticsearch에 stock index로 저장
 ```yml
 output {
   stdout {
@@ -169,7 +172,8 @@ output {
   }
 }
 ```
-**Elasticsearch Multi-head에서 데이터 확인**
+
+### **Elasticsearch Multi-head에서 데이터 확인**
 ![Pasted image 20250121172141](https://github.com/user-attachments/assets/99a904ae-c1ad-4ba2-89a7-527e6cc26890)
 
 
