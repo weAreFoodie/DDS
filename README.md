@@ -51,8 +51,7 @@ WebSocket을 통해 실시간 주가 데이터를 안정적으로 수집하고 E
 
 
 ## 아키텍처
-
-사진
+<img width="3280" alt="Untitled (1)" src="https://github.com/user-attachments/assets/499adbba-694b-4576-a87a-de47fe9d6a5d" />
 
 | name | version |
 |:--:|:--:|
@@ -66,6 +65,19 @@ WebSocket을 통해 실시간 주가 데이터를 안정적으로 수집하고 E
 ---
 
 ## 데이터 구조
+### ElasticSearch
+|Element|**한글명**|Type|
+|---|---|---|
+|MKSC_SHRN_ISCD|유가증권 단축 종목코드|text|
+|STCK_CNTG_HOUR|주식 체결 시간|date|
+|STCK_PRPR|주식 현재가|long|
+|CNTG_VOL|체결 거래량|long|
+|ACML_VOL|누적 거래량|long|
+|STCK_HGPR|주식 최고가|long|
+|STCK_LWPR|주식 최저가|long|
+
+### Mysql
+![stock - kr_stock_trade](https://github.com/user-attachments/assets/5ba73d83-be57-44c4-a399-f2289e9cd4d2)
 
 ---
 
