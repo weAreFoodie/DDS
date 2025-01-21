@@ -54,7 +54,12 @@ ELK-Stack의 최대 장점인 실시간, 대용량 데이터 처리와 더불어
 ---
 ## 활용 기술
 
-<img src="https://img.shields.io/badge/Filebeat-DD002A?style=for-the-badge&logo=elastic&logoColor=white" alt="Filebeat"> <img src="https://img.shields.io/badge/Logstash-005571?style=for-the-badge&logo=elastic&logoColor=white" alt="Logstash"> <img src="https://img.shields.io/badge/Elasticsearch-005571?style=for-the-badge&logo=elasticsearch&logoColor=white" alt="Elasticsearch"> <img src="https://img.shields.io/badge/Kibana-FF69B4?style=for-the-badge&logo=kibana&logoColor=white" alt="Kibana"> <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL"> <img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white" alt="Ubuntu"> <img src="https://img.shields.io/badge/WebSocket-004A59?style=for-the-badge&logo=websocket&logoColor=white" alt="WebSocket"> <img src="https://img.shields.io/badge/DBeaver-372923?style=for-the-badge&logo=dbeaver&logoColor=white" alt="DBeaver"> <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" alt="Git"> <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white" alt="Slack"> <img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white" alt="Notion">
+| 분류              | 로고                                                                                                                                                                              |
+|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 데이터 처리 및 분석 | ![Filebeat](https://img.shields.io/badge/Filebeat-DD002A?style=for-the-badge&logo=elastic&logoColor=white) ![Logstash](https://img.shields.io/badge/Logstash-005571?style=for-the-badge&logo=elastic&logoColor=white) ![Elasticsearch](https://img.shields.io/badge/Elasticsearch-005571?style=for-the-badge&logo=elasticsearch&logoColor=white) ![Kibana](https://img.shields.io/badge/Kibana-FF69B4?style=for-the-badge&logo=kibana&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) |
+| 시스템 환경       | ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white) ![WebSocket](https://img.shields.io/badge/WebSocket-004A59?style=for-the-badge&logo=websocket&logoColor=white)                                           |
+| 개발 도구         | ![DBeaver](https://img.shields.io/badge/DBeaver-372923?style=for-the-badge&logo=dbeaver&logoColor=white)                                                 |
+| 협업 툴           | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)   ![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white)                                                  |
 
 --- 
 
@@ -65,7 +70,7 @@ ELK-Stack의 최대 장점인 실시간, 대용량 데이터 처리와 더불어
 
 | name  | FileBeat | Logstash | Elasticsearch | Kibana | Mysql | Ubuntu |
 |:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| version | 7.11.1 | 7.11.1 | 7.11.1 | 7.11.1 | 7.11.1 | 7.11.1 |
+| version | 7.11.1 | 7.11.1 | 7.11.1 | 7.11.1 | 8.0.40 | 24.04.1 |
 
 ---
 
@@ -190,6 +195,8 @@ output {
 
 ### **Elasticsearch Multi-head에서 데이터 확인**
 ![Pasted image 20250121172141](https://github.com/user-attachments/assets/99a904ae-c1ad-4ba2-89a7-527e6cc26890)
+
+## 4. elastic search 데이터를 logstash를 이용해 mysql에 저장하기
 
 ---
 
