@@ -60,7 +60,8 @@ ELK-Stack의 최대 장점인 실시간, 대용량 데이터 처리와 더불어
 
 
 ## 아키텍처
-<img width="3280" alt="Untitled (1)" src="https://github.com/user-attachments/assets/499adbba-694b-4576-a87a-de47fe9d6a5d" />
+<img width="3296" alt="Untitled-찐막" src="https://github.com/user-attachments/assets/5131a0aa-d10c-4167-b816-8449d10a2047" />
+
 
 | name  | FileBeat | Logstash | Elasticsearch | Kibana | Mysql | Ubuntu |
 |:--:|:--:|:--:|:--:|:--:|:--:|:--:|
