@@ -198,6 +198,132 @@ output {
 
 ## 4. elastic search 데이터를 logstash를 이용해 mysql에 저장하기
 
+### 📥 4-1. `logstash-output-jdbc` 플러그인 설치
+
+- **CMD 창에서 설치**
+    1. **CMD(명령 프롬프트)** 실행
+    2. Logstash가 설치된 폴더로 이동<br/>
+    예: `cd C:\logstash`
+    3. 아래 명령어 실행하여 플러그인 설치
+        
+        ```bash
+        bin\logstash-plugin install logstash-output-jdbc
+        ```
+        
+- **설치 완료 후 화면**
+    
+    ![image](https://github.com/user-attachments/assets/f1dfb5e0-ae96-4af0-92b9-b1346e7ef537)
+    
+-  **플러그인 설치 확인**
+    
+    Logstash가 설치된 폴더 하위 `vendor\bundle\jruby\2.5.0\gems` 폴더 내 `logstash-output-jdbc`가 존재하는지 확인
+    
+    ![image2](https://github.com/user-attachments/assets/34088867-dc09-48bb-8363-5573c2f9aa81)
+
+
+### **🔗 4-2. JDBC 드라이버 다운로드 및 설정**
+
+- **MySQL Connector/J 다운로드**
+    - [**MySQL Connector/J 다운로드 링크**](https://downloads.mysql.com/archives/c-j/)
+    - 버전: **8.2.0**
+    - 파일: Platform Independent (ZIP 파일) 다운로드
+- **압축 해제 및 이동**
+    1. 다운로드한 ZIP 파일 압축 해제
+    2. 압축 해제된 폴더를 **ELK 설치 폴더의 하위 디렉토리**로 이동
+ 
+        ![image3](https://github.com/user-attachments/assets/0ef030bd-cb1a-4f55-b1a7-94bc53af010f)
+        
+        예: `C:\logstash\jdbc` 
+        
+    - **참고**
+        
+        ![image4](https://github.com/user-attachments/assets/ea5e9c7e-ea9c-41b4-a84d-fb32422829c1)
+
+        `mysql-connector-j-8.2.0.jar`의 경로를 JDBC 설정 시 사용
+
+### **⚙️ 4-3. Logstash 설정 파일 (conf) 작성**
+
+```
+input {
+  elasticsearch {
+        hosts => ["http://localhost:9200"]  # Elasticsearch 호스트
+        index => "stock"         # Elasticsearch 인덱스 이름
+        query => '{
+          "size": 1,
+          "query": {
+            "match_all": {}
+          },
+          "sort": [
+            {
+              "STCK_CNTG_HOUR": {
+                "order": "desc"
+              }
+            }
+          ]
+        }'
+        schedule => "*/10 * * * *"         # 매 10분마다 실행
+    }
+  # stdin{}
+}
+
+filter {
+    ruby {
+        code => '
+            cntg_hour = event.get("STCK_CNTG_HOUR")
+            if cntg_hour
+                # ISO8601 형식을 MySQL DATETIME 형식으로 변환
+                formatted_time = Time.parse(cntg_hour).strftime("%Y-%m-%d %H:%M:%S")
+                event.set("STCK_CNTG_HOUR", formatted_time)
+            end
+        '
+    }
+}
+
+output {
+  # 콘솔창에 어떤 데이터들로 필터링 되었는지 확인
+  stdout {
+    codec => rubydebug
+  }
+  
+  jdbc {
+        driver_jar_path => "C:\\02.devEnv\\ELK\\mysql-connector-j-8.2.0\\mysql-connector-j-8.2.0.jar"  # MySQL JDBC 드라이버 경로
+        driver_class => "com.mysql.cj.jdbc.Driver"
+        connection_string => "jdbc:mysql://<ip>:<port>/stock?useSSL=false&allowPublicKeyRetrieval=true&user=<user id>&password=<user pw>"  # < >: 각자 환경의 데이터 삽입
+        statement => [
+            "INSERT INTO kr_stock_trade (mksc_shrn_iscd, stck_cntg_hour, stck_prpr, cntg_vol, acml_vol, stck_hgpr, stck_lwpr, now_time) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+            "%{MKSC_SHRN_ISCD}", "%{STCK_CNTG_HOUR}", "%{STCK_PRPR}", "%{CNTG_VOL}", "%{ACML_VOL}", "%{STCK_HGPR}", "%{STCK_LWPR}"
+        ]
+    }
+}
+
+```
+
+- **구조**
+    - `input` 섹션: 데이터 소스를 정의.
+    - `filter` 섹션: 데이터 처리 및 변환 작업 정의.
+    - `output` 섹션: 데이터베이스 연결 및 SQL 명령을 정의.
+
+
+- **구현**
+    1. **데이터 입력 (Input)**
+        - elastic search의 데이터를 소스로 가져옴.
+        - `schedule` 옵션을 통해 10분마다 실행
+    2. **데이터 처리 (Filter)**
+        - `ISO8601` 시간 형식을 MySQL의 `DATETIME` 형식으로 변환
+    3. **데이터 출력 (Output)**
+        - `output` 섹션에서 데이터베이스로 데이터를 내보내기 위해 `logstash-output-jdbc` 플러그인을 사용.
+        - JDBC 드라이버를 통해 데이터베이스와 연결.
+        - SQL 쿼리문을 실행하여 데이터를 테이블에 저장.
+
+### 📊 4-참고. 구성 요소 간 비교 (플러그인 vs. 드라이버)
+
+| **항목** | **logstash-output-jdbc 플러그인** | **JDBC 드라이버** |
+| --- | --- | --- |
+| **역할** | Logstash에서 데이터를 DB로 내보내는 기능 제공 | Logstash와 DB 간의 연결을 지원하는 통신 드라이버 |
+| **사용 목적** | Logstash 파이프라인에서 SQL 쿼리 실행 | DB와 Logstash 간 데이터 송수신을 가능하게 함 |
+| **설치 방식** | Logstash 플러그인 설치 명령어 사용 | MySQL Connector/J 등의 외부 파일 다운로드 필요 |
+| **의존성** | JDBC 드라이버 설치가 필수 | 독립적으로 사용 가능 |
+
 ---
 
 ## 시연
