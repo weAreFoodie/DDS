@@ -71,6 +71,11 @@ WebSocket을 통해 실시간 주가 데이터를 안정적으로 수집하고 E
 |STCK_HGPR|주식 최고가|long|
 |STCK_LWPR|주식 최저가|long|
 
+### Mysql
+![stock - kr_stock_trade](https://github.com/user-attachments/assets/5ba73d83-be57-44c4-a399-f2289e9cd4d2)
+
+---
+
 ## 데이터 흐름
 ### 1. 한국 투자 증권 API를 사용
 - 삼성전자(005930)의 실시간 데이터를 1초마다 받아와 csv에 저장
@@ -175,10 +180,6 @@ output {
 
 ### **Elasticsearch Multi-head에서 데이터 확인**
 ![Pasted image 20250121172141](https://github.com/user-attachments/assets/99a904ae-c1ad-4ba2-89a7-527e6cc26890)
-
-
-### Mysql
-![stock - kr_stock_trade](https://github.com/user-attachments/assets/5ba73d83-be57-44c4-a399-f2289e9cd4d2)
 
 ---
 
