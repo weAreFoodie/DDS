@@ -71,6 +71,108 @@ WebSocket을 통해 실시간 주가 데이터를 안정적으로 수집하고 E
 |STCK_HGPR|주식 최고가|long|
 |STCK_LWPR|주식 최저가|long|
 
+## 데이터 흐름
+### 1. 한국 투자 증권 API를 사용
+- 삼성전자(005930)의 실시간 데이터를 1초마다 받아와 csv에 저장
+**CSV 저장 예시**
+- 유가증권 단축 종목코드, 주식 체결 시간, 주식 현재가, 체결 거래량, 누적 거래량, 주식 최고가, 주식 최저가
+![Pasted image 20250121165626](https://github.com/user-attachments/assets/b6ae6624-76d6-4391-9bcd-75d06e3e2a68)
+
+
+## 2. filebeat로 csv 파일 읽어오기
+- path:에 실시간으로 저장되고 있는 csv 파일 경로 지정
+```yml
+ paths:
+    C:\00.dataSet\stock.csv
+```
+- output을 logstash로 설정
+```yml
+output.logstash:
+  hosts: ["localhost:5044"]
+```
+
+## 3. logstash로 전처리 후 elelasticsearch에 저장하기
+### 3-1. message 필드를 ',' 분할하여 새로운 필드로 추가
+```yml
+filter {
+  mutate {
+    # "message" 필드를 ','로 분할하여 새로운 필드로 추가
+    split => [ "message", "," ]
+    add_field => {
+      "MKSC_SHRN_ISCD" => "%{[message][0]}"
+      "STCK_CNTG_HOUR" => "%{[message][1]}"
+      "STCK_PRPR" => "%{[message][2]}"
+      "CNTG_VOL" => "%{[message][3]}"
+      "ACML_VOL" => "%{[message][4]}"
+      "STCK_HGPR" => "%{[message][5]}"
+      "STCK_LWPR" => "%{[message][6]}"
+    }
+  }
+  ```
+
+### 3-1. elelasticsearch 형식에 맞는 date 타입으로 변환
+- 한국 투자 증권에서 제공하는 주식 체결 시간이 string 타입으로 "142011"(시간:분:초)로 들어오고 있습니다.
+- ruby를 사용하여 현재 날짜를 가져오고 string 타입을 hh:mm:ss 형식으로 변환 후 현재 날짜와 합쳐 필드에 추가
+```yml
+ ruby {
+    code => '
+      cntg_hour = event.get("STCK_CNTG_HOUR")
+      if cntg_hour
+        # 현재 날짜 가져오기
+        today = Time.now.strftime("%Y-%m-%d")
+        # STCK_CNTG_HOUR 값을 HH:mm:ss 형식으로 변환
+        formatted_time = cntg_hour.scan(/../).join(":")
+        # 최종 날짜와 시간 형식으로 합치기
+        full_datetime = "#{today} #{formatted_time}"
+        event.set("STCK_CNTG_HOUR", full_datetime)
+      end
+    '
+  }
+
+  date {
+    match => [ "STCK_CNTG_HOUR", "yyyy-MM-dd HH:mm:ss" ]
+    timezone => "Asia/Seoul"
+    target => "STCK_CNTG_HOUR"
+  }
+```
+### 3-3. 나머지 데이터 intger 타입으로 변경 및 사용하지 않는 필드 삭제
+- 주식 현재가, 체결 거래량, 누적 거래량, 주식 최고가, 주식 최저가 integer로 변경
+- "ecs", "host", "@version", "agent", "log", "input", "message", "@timestamp" 필드 삭제
+
+```
+   # Kibana에서 데이터 분석시 필요하기 때문에 숫자 타입으로 변경
+  mutate {
+    convert => {
+      "STCK_PRPR" => "integer"
+      "CNTG_VOL" => "integer"
+      "ACML_VOL" => "integer"
+      "STCK_HGPR" => "integer"
+      "STCK_LWPR" => "integer"
+    }
+  }
+
+  mutate {
+    remove_field => ["ecs", "host", "@version", "agent", "log", "input", "message", "@timestamp"]
+  }
+}
+```
+### elelasticsearch에 stock index로 저장
+```yml
+output {
+  stdout {
+    codec => rubydebug
+  }
+
+  elasticsearch {
+    hosts => ["http://localhost:9200"]
+    index => "stock"
+  }
+}
+```
+**Elasticsearch Multi-head에서 데이터 확인**
+![Pasted image 20250121172141](https://github.com/user-attachments/assets/99a904ae-c1ad-4ba2-89a7-527e6cc26890)
+
+
 ### Mysql
 ![stock - kr_stock_trade](https://github.com/user-attachments/assets/5ba73d83-be57-44c4-a399-f2289e9cd4d2)
 
