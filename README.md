@@ -362,6 +362,7 @@ output {
 ## 💣트러블 슈팅
 1. Logstash 다중 설정 파일 실행 충돌 문제
 2. Elasticsearch에서 최신 데이터 하나 가져와 MySQL에 삽입하기
+3. CSV, Elasticsearch, MySQL로의 데이터 처리 중 시간대 오류
 
 ### 1. Logstash 다중 설정 파일 실행 충돌 문제
 #### **문제 원인**
@@ -492,6 +493,53 @@ logstash -f ../config/es_to_mysql.conf --path.data /path/to/data2 &
     1. `last_time` 파일에 마지막으로 처리된 `STCK_CNTG_HOUR` 시간을 저장
     2. 새로운 데이터의 시간이 `last_time`보다 이전이거나 같으면 이벤트를 취소(`event.cancel`)
     3. 그렇지 않으면 현재 시간을 `last_time` 파일에 저장하고 MySQL에 전달
+
+### 3. CSV, Elasticsearch, MySQL로의 데이터 처리 중 시간대 오류
+
+#### **문제 상황**
+CSV 데이터를 Elasticsearch에 저장하고, 다시 Elasticsearch에서 MySQL로 데이터를 전송하는 과정에서 시간대 문제가 발생했다.
+MySQL에 한국 기준으로 시간이 들어가는 것이 아니라 UTC기준시가 저장되었다.
+
+Elasticsearch에서 데이터를 MySQL로 전송할 때, Elasticsearch에 저장된 시간은 UTC 기준으로 저장되어 있었다. 이 상태에서 MySQL에 저장하려면 다시 한국 시간(KST)으로 변환해야 했다.
+
+### **해결 방법**
+**1. CSV에서 Elasticsearch로 데이터 저장 시** <br>
+CSV에서 `STCK_CNTG_HOUR` 값을 가져와 한국 시간(KST) 기준으로 현재 날짜와 시간을 합쳐서 저장해야 했다. 
+이를 해결하기 위해, `Time.now.getlocal("+09:00")`을 사용하여 한국 시간(KST) 기준으로 현재 날짜를 가져오고, `STCK_CNTG_HOUR` 값은 `HH:mm:ss` 형식으로 변환한 후, 날짜와 시간을 결합하여 Elasticsearch에 저장할 수 있었다.
+
+```ruby
+ruby {
+  code => '
+    cntg_hour = event.get("STCK_CNTG_HOUR")
+    if cntg_hour
+      # 현재 날짜 가져오기 (KST)
+      today = Time.now.getlocal("+09:00").strftime("%Y-%m-%d")
+      # STCK_CNTG_HOUR 값을 HH:mm:ss 형식으로 변환
+      formatted_time = cntg_hour.scan(/../).join(":")
+      # 최종 날짜와 시간 형식으로 합치기
+      full_datetime = "#{today} #{formatted_time}"
+      event.set("STCK_CNTG_HOUR", full_datetime)
+    end
+  '
+}
+```
+
+**2. Elasticsearch에서 MySQL로 데이터 저장 시** <br>
+Elasticsearch에 저장된 시간은 UTC 기준으로 저장된다. 따라서 이를 MySQL에 저장할 때 한국 시간(KST)으로 변환해야 했다.
+Time.parse(cntg_hour).getlocal("+09:00")을 사용하여 UTC로 저장된 시간을 한국 시간(KST)으로 변환하고, "%Y-%m-%d %H:%M:%S" 형식으로 변환한 후 MySQL에 저장했다.
+
+```ruby
+ruby {
+  code => '
+    cntg_hour = event.get("STCK_CNTG_HOUR")
+    if cntg_hour
+      # UTC 기준 시간을 KST로 변환
+      formatted_time = Time.parse(cntg_hour).getlocal("+09:00").strftime("%Y-%m-%d %H:%M:%S")
+      event.set("STCK_CNTG_HOUR", formatted_time)
+    end
+  '
+}
+```
 
 ---
 
