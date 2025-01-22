@@ -16,7 +16,7 @@
 > 1. 실시간 데이터를 이용한 ELK-Stack 활용
 > 2. RDBMS 연동을 통한 데이터 보존 전략에 대한 고찰
 
-WebSocket을 통해 실시간 주가 데이터를 안정적으로 수집하고 ELK 스택을 통해 실시간 데이터 처리 및 분석하고, 효율적인 데이터 관리를 학습하고자 프로젝트를 구성했습니다.
+WebSocket을 통해 실시간 주가 데이터를 안정적으로 수집하고 ELK 스택을 통해 실시간 데이터 처리 및 분석을 하며, 효율적인 데이터 관리를 학습하고자 프로젝트를 구성했습니다.
 
 ### 주가 체결 데이터 선택 이유
 ELK-Stack의 최대 장점인 실시간, 대용량 데이터 처리와 더불어 시각화할 수 있는 도메인을 추려보다가 해당 조건을 만족할 수 있는 국내 주식의 주가 체결 정보를 선택하게 되었습니다. 
@@ -126,7 +126,7 @@ ELK-Stack의 실시간 데이터 처리 및 시각화 기능을 활용하여 국
 |STCK_HGPR|주식 최고가|long|
 |STCK_LWPR|주식 최저가|long|
 
-### Mysql
+### MySQL
 **테이블 명: stock_kr_trade**
 <br>
 ![stock - kr_stock_trade](https://github.com/user-attachments/assets/5ba73d83-be57-44c4-a399-f2289e9cd4d2)
@@ -134,14 +134,14 @@ ELK-Stack의 실시간 데이터 처리 및 시각화 기능을 활용하여 국
 ---
 
 ## 🔨**데이터 흐름**
-### 1. 한국 투자 증권 API를 사용
-- 삼성전자(005930)의 실시간 데이터를 1초마다 받아와 csv에 저장
-**CSV 저장 예시**
-- 유가증권 단축 종목코드, 주식 체결 시간, 주식 현재가, 체결 거래량, 누적 거래량, 주식 최고가, 주식 최저가
+### 1. 한국 투자 증권 API 사용하기
+- 삼성전자(005930)의 실시간 데이터를 1초마다 받아와 CSV에 저장 
+- **CSV 저장 예시** <br>
+   유가증권 단축 종목코드, 주식 체결 시간, 주식 현재가, 체결 거래량, 누적 거래량, 주식 최고가, 주식 최저가
 ![Pasted image 20250121165626](https://github.com/user-attachments/assets/b6ae6624-76d6-4391-9bcd-75d06e3e2a68)
 
 
-### 2. filebeat로 csv 파일 읽어오기
+### 2. Filebeat로 CSV 파일 읽어오기
 - path:에 실시간으로 저장되고 있는 csv 파일 경로 지정
 ```yml
  paths:
@@ -153,7 +153,7 @@ output.logstash:
   hosts: ["localhost:5044"]
 ```
 
-### 3. logstash로 전처리 후 elelasticsearch에 저장하기
+### 3. Logstash로 전처리 후 Elasticsearch에 저장하기
 
 #### 3-1. message 필드를 ',' 분할하여 새로운 필드로 추가
 ```yml
@@ -173,7 +173,7 @@ filter {
   }
   ```
 
-#### 3-2. elelasticsearch 형식에 맞는 date 타입으로 변환
+#### 3-2. Elasticsearch 형식에 맞는 date 타입으로 변환
 - 한국 투자 증권에서 제공하는 주식 체결 시간이 string 타입으로 "142011"(시간:분:초)로 들어오고 있음
 - ruby를 사용하여 현재 날짜를 가져오고 string 타입을 hh:mm:ss 형식으로 변환 후 현재 날짜와 합쳐 필드에 추가
 ```yml
@@ -221,7 +221,7 @@ filter {
 }
 ```
 
-#### 3-4. elelasticsearch에 stock index로 저장
+#### 3-4. Elasticsearch에 stock index로 저장
 ```yml
 output {
   stdout {
@@ -238,7 +238,7 @@ output {
 #### **Elasticsearch Multi-head에서 데이터 확인**
 ![Pasted image 20250121172141](https://github.com/user-attachments/assets/99a904ae-c1ad-4ba2-89a7-527e6cc26890)
 
-### 4. elastic search 데이터를 logstash를 이용해 mysql에 저장하기
+### 4. Elasticsearch 데이터를 Logstash를 이용해 MySQL에 저장하기
 
 #### 📥 4-1. `logstash-output-jdbc` 플러그인 설치
 
@@ -359,7 +359,7 @@ output {
 
 - **구현**
     1. **데이터 입력 (Input)**
-        - elastic search의 데이터를 소스로 가져옴.
+        - Elasticsearch의 데이터를 소스로 가져옴.
         - `schedule` 옵션을 통해 10분마다 실행
     2. **데이터 처리 (Filter)**
         - `ISO8601` 시간 형식을 MySQL의 `DATETIME` 형식으로 변환
@@ -381,11 +381,13 @@ output {
 ---
 
 ## 💣**트러블 슈팅**
-**문제1 Logstash 다중 설정 파일 실행 충돌 문제**
-**문제2 Elasticsearch에서 최신 데이터 하나 가져와 MySQL에 삽입하기**
-**문제3 CSV, Elasticsearch, MySQL로의 데이터 처리 중 시간대 오류**
+> **문제1. Logstash 다중 설정 파일 실행 충돌 문제** <br>
+> **문제2. Elasticsearch에서 최신 데이터 하나 가져와 MySQL에 삽입하기** <br>
+> **문제3. CSV, Elasticsearch, MySQL로의 데이터 처리 중 시간대 오류** <br>
 
-### 문제1 Logstash 다중 설정 파일 실행 충돌 문제
+<br>
+
+>### 문제1. Logstash 다중 설정 파일 실행 충돌 문제
 #### **문제 원인**
 
 1. **Logstash 상태 데이터 충돌**:
@@ -407,9 +409,9 @@ logstash -f ../config/es_to_mysql.conf --path.data /path/to/data2 &
 
 이 과정은 Logstash 프로세스 간 충돌 문제를 해결하는 대표적인 방식으로, 상태 데이터를 고유 경로에 저장하도록 설정하는 것이 핵심!
 
----
+<br>
 
-### **문제2 Elasticsearch에서 최신 데이터 하나 가져와 MySQL에 삽입하기**
+>### **문제2. Elasticsearch에서 최신 데이터 하나 가져와 MySQL에 삽입하기**
 #### **문제 상황**
 
 1. **목표**:
@@ -418,7 +420,7 @@ logstash -f ../config/es_to_mysql.conf --path.data /path/to/data2 &
 2. **문제**:
     - Logstash에서 Elasticsearch 쿼리로 최신 데이터 1개만 가져오도록 설정했지만, 조회된 데이터가 모두 저장되는 문제가 발생
 
-#### **트러블 원인**
+#### **문제 원인**
 
 1. Elasticsearch 응답 데이터가 제대로 필터링되지 않음:
     - Elasticsearch는 요청에 대해 전체 응답(`hits.hits` 배열)을 반환
@@ -515,18 +517,18 @@ logstash -f ../config/es_to_mysql.conf --path.data /path/to/data2 &
     2. 새로운 데이터의 시간이 `last_time`보다 이전이거나 같으면 이벤트를 취소(`event.cancel`)
     3. 그렇지 않으면 현재 시간을 `last_time` 파일에 저장하고 MySQL에 전달
 
-### **문제3 CSV, Elasticsearch, MySQL로의 데이터 처리 중 시간대 오류**
+<br>
+
+>### **문제3. CSV, Elasticsearch, MySQL로의 데이터 처리 중 시간대 오류**
 
 #### **문제 상황**
-CSV 데이터를 Elasticsearch에 저장하고, 다시 Elasticsearch에서 MySQL로 데이터를 전송하는 과정에서 시간대 문제가 발생했다.
-MySQL에 한국 기준으로 시간이 들어가는 것이 아니라 UTC기준시가 저장되었다.
+- CSV 데이터를 Elasticsearch에 저장하고, 다시 Elasticsearch에서 MySQL로 데이터를 전송하는 과정에서 시간대 문제가 발생
+- MySQL에 한국 기준으로 시간이 들어가는 것이 아니라 UTC기준시가 저장됨
 
-Elasticsearch에서 데이터를 MySQL로 전송할 때, Elasticsearch에 저장된 시간은 UTC 기준으로 저장되어 있었다. 이 상태에서 MySQL에 저장하려면 다시 한국 시간(KST)으로 변환해야 했다.
-
-### **해결 방법**
+#### **해결 방법**
 **1. CSV에서 Elasticsearch로 데이터 저장 시** <br>
-CSV에서 `STCK_CNTG_HOUR` 값을 가져와 한국 시간(KST) 기준으로 현재 날짜와 시간을 합쳐서 저장해야 했다. 
-이를 해결하기 위해, `Time.now.getlocal("+09:00")`을 사용하여 한국 시간(KST) 기준으로 현재 날짜를 가져오고, `STCK_CNTG_HOUR` 값은 `HH:mm:ss` 형식으로 변환한 후, 날짜와 시간을 결합하여 Elasticsearch에 저장할 수 있었다.
+- CSV에서 `STCK_CNTG_HOUR` 값을 가져와 한국 시간(KST) 기준으로 현재 날짜와 시간을 합쳐서 저장
+- `Time.now.getlocal("+09:00")`을 사용하여 한국 시간(KST) 기준으로 현재 날짜를 가져오고, `STCK_CNTG_HOUR` 값은 `HH:mm:ss` 형식으로 변환한 후, 날짜와 시간을 결합하여 Elasticsearch에 저장
 
 ```ruby
 ruby {
@@ -546,8 +548,9 @@ ruby {
 ```
 
 **2. Elasticsearch에서 MySQL로 데이터 저장 시** <br>
-Elasticsearch에 저장된 시간은 UTC 기준으로 저장된다. 따라서 이를 MySQL에 저장할 때 한국 시간(KST)으로 변환해야 했습니다.
-Time.parse(cntg_hour).getlocal("+09:00")을 사용하여 UTC로 저장된 시간을 한국 시간(KST)으로 변환하고, "%Y-%m-%d %H:%M:%S" 형식으로 변환한 후 MySQL에 저장했습니다.
+- Elasticsearch에 저장된 시간은 UTC 기준으로 저장됨
+- 따라서 이를 MySQL에 저장할 때 한국 시간(KST)으로 변환해야 함
+- Time.parse(cntg_hour).getlocal("+09:00")을 사용하여 UTC로 저장된 시간을 한국 시간(KST)으로 변환하고, "%Y-%m-%d %H:%M:%S" 형식으로 변환한 후 MySQL에 저장
 
 ```ruby
 ruby {
