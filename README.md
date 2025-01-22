@@ -228,9 +228,9 @@ output {
 ### **Elasticsearch Multi-head에서 데이터 확인**
 ![Pasted image 20250121172141](https://github.com/user-attachments/assets/99a904ae-c1ad-4ba2-89a7-527e6cc26890)
 
-## 4. elastic search 데이터를 logstash를 이용해 mysql에 저장하기
+### 4. elastic search 데이터를 logstash를 이용해 mysql에 저장하기
 
-### 📥 4-1. `logstash-output-jdbc` 플러그인 설치
+#### 📥 4-1. `logstash-output-jdbc` 플러그인 설치
 
 - **CMD 창에서 설치**
     1. **CMD(명령 프롬프트)** 실행
@@ -253,7 +253,7 @@ output {
     ![image2](https://github.com/user-attachments/assets/34088867-dc09-48bb-8363-5573c2f9aa81)
 
 
-### **🔗 4-2. JDBC 드라이버 다운로드 및 설정**
+#### **🔗 4-2. JDBC 드라이버 다운로드 및 설정**
 
 - **MySQL Connector/J 다운로드**
     - [**MySQL Connector/J 다운로드 링크**](https://downloads.mysql.com/archives/c-j/)
@@ -273,7 +273,7 @@ output {
 
         `mysql-connector-j-8.2.0.jar`의 경로를 JDBC 설정 시 사용
 
-### **⚙️ 4-3. Logstash 설정 파일 (conf) 작성**
+#### **⚙️ 4-3. Logstash 설정 파일 (conf) 작성**
 
 ```
 input {
@@ -503,39 +503,6 @@ logstash -f ../config/es_to_mysql.conf --path.data /path/to/data2 &
 | **사용 목적** | Logstash 파이프라인에서 SQL 쿼리 실행 | DB와 Logstash 간 데이터 송수신을 가능하게 함 |
 | **설치 방식** | Logstash 플러그인 설치 명령어 사용 | MySQL Connector/J 등의 외부 파일 다운로드 필요 |
 | **의존성** | JDBC 드라이버 설치가 필수 | 독립적으로 사용 가능 |
-
----
-
-## 시연
-
---- 
-
-## Troubleshooting
-### Logstash 인스턴스 2개 실행 중 문제
-방법1. Logstash 인스턴스를 2개 생성하기 위해 폴더 구조를 나누고 실제 실행도 나누어서 하는 방법
-방법2. Logstash 실행시 파싱할 conf 파일 내에서 2가지 pipeline을 구성하여 1개의 인스턴스에서 실행하는 방법
-
-### STCK_CNTG_HOUR값 mysql 이관 중 타입 오류
-
-DATETIME 포멧에 지원하지 않는 표현식으로 인한 예외 발생
--> varchar(50)으로 적용시 문제 해결 가능 but 타입적인 문제는 없으나, 추후 Mysql에서 날짜 연산 시에 다시 파싱을 해야 연산이 가능한 문제가 예상되어 다음과 같이 Logstash conf 파일 내에서 filter 적용을 통해 ISO8601 형식을 DATETIME 형식으로 변환 후 insertion할 수 있었다.
-
-``` ruby
-filter {
-    ruby {
-        code => '
-            cntg_hour = event.get("STCK_CNTG_HOUR")
-            if cntg_hour
-                # ISO8601 형식을 MySQL DATETIME 형식으로 변환
-                formatted_time = Time.parse(cntg_hour).strftime("%Y-%m-%d %H:%M:%S")
-                event.set("STCK_CNTG_HOUR", formatted_time)
-            end
-        '
-    }
-} 
-```
-
-### 지정된 시간마다 지정한 갯수의 row가 아닌 전체 row를 추가하는 문제
 
 ---
 
