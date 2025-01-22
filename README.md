@@ -7,7 +7,7 @@
 <a href="#아키텍처">5. 아키텍처</a><br>
 <a href="#데이터-구조">6. 데이터 구조</a><br>
 <a href="#데이터-흐름">7. 데이터 흐름</a><br>
-<a href="#troubleshooting">8. Troubleshooting</a><br>
+<a href="#트러블-슈팅">8. 트러블 슈팅</a><br>
 <a href="#회고">9. 회고</a><br>
 
 
