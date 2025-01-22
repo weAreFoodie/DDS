@@ -108,6 +108,7 @@ ELK-Stack의 실시간 데이터 처리 및 시각화 기능을 활용하여 국
 
 ## 데이터 구조
 ### ElasticSearch
+**인덱스 명: stock**
 |Element|**한글명**|Type|
 |---|---|---|
 |MKSC_SHRN_ISCD|유가증권 단축 종목코드|text|
@@ -119,6 +120,7 @@ ELK-Stack의 실시간 데이터 처리 및 시각화 기능을 활용하여 국
 |STCK_LWPR|주식 최저가|long|
 
 ### Mysql
+**테이블 명: stock_kr_trade**
 ![stock - kr_stock_trade](https://github.com/user-attachments/assets/5ba73d83-be57-44c4-a399-f2289e9cd4d2)
 
 ---
