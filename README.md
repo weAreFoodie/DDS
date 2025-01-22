@@ -54,7 +54,7 @@ ELK-Stack의 최대 장점인 실시간, 대용량 데이터 처리와 더불어
 ---
 ## 활용 기술
 
-| 분류              | 로고                                                                                                                                                                              |
+| 분류              | 활용 기술                                                                                                                                                                              |
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 데이터 처리 및 분석 | ![Filebeat](https://img.shields.io/badge/Filebeat-DD002A?style=for-the-badge&logo=elastic&logoColor=white) ![Logstash](https://img.shields.io/badge/Logstash-005571?style=for-the-badge&logo=elastic&logoColor=white) ![Elasticsearch](https://img.shields.io/badge/Elasticsearch-005571?style=for-the-badge&logo=elasticsearch&logoColor=white) ![Kibana](https://img.shields.io/badge/Kibana-FF69B4?style=for-the-badge&logo=kibana&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) |
 | 시스템 환경       | ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white) ![WebSocket](https://img.shields.io/badge/WebSocket-004A59?style=for-the-badge&logo=websocket&logoColor=white)                                           |
@@ -263,16 +263,27 @@ input {
         }'
         schedule => "*/10 * * * *"         # 매 10분마다 실행
     }
-  # stdin{}
 }
 
 filter {
     ruby {
+      code => '
+        last_processed_time = File.exist?("/path/to/last_time") ? File.read("/path/to/last_time").strip : nil
+        current_time = event.get("STCK_CNTG_HOUR")
+        if last_processed_time && current_time <= last_processed_time
+          event.cancel
+        else
+          File.open("/path/to/last_time", "w") { |f| f.write(current_time) }
+        end
+      '
+    }
+
+    ruby {
         code => '
             cntg_hour = event.get("STCK_CNTG_HOUR")
             if cntg_hour
-                # ISO8601 형식을 MySQL DATETIME 형식으로 변환
-                formatted_time = Time.parse(cntg_hour).strftime("%Y-%m-%d %H:%M:%S")
+                # UTC 기준 시간을 KST로 변환
+                formatted_time = Time.parse(cntg_hour).getlocal("+09:00").strftime("%Y-%m-%d %H:%M:%S")
                 event.set("STCK_CNTG_HOUR", formatted_time)
             end
         '
@@ -284,7 +295,7 @@ output {
   stdout {
     codec => rubydebug
   }
-  
+
   jdbc {
         driver_jar_path => "C:\\02.devEnv\\ELK\\mysql-connector-j-8.2.0\\mysql-connector-j-8.2.0.jar"  # MySQL JDBC 드라이버 경로
         driver_class => "com.mysql.cj.jdbc.Driver"
@@ -310,6 +321,7 @@ output {
         - `schedule` 옵션을 통해 10분마다 실행
     2. **데이터 처리 (Filter)**
         - `ISO8601` 시간 형식을 MySQL의 `DATETIME` 형식으로 변환
+        - UTC 기준 시간을 KST로 변환
     3. **데이터 출력 (Output)**
         - `output` 섹션에서 데이터베이스로 데이터를 내보내기 위해 `logstash-output-jdbc` 플러그인을 사용.
         - JDBC 드라이버를 통해 데이터베이스와 연결.
