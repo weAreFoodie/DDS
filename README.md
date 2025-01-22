@@ -167,7 +167,7 @@ filter {
 - 한국 투자 증권에서 제공하는 주식 체결 시간이 string 타입으로 "142011"(시간:분:초)로 들어오고 있음
 - ruby를 사용하여 현재 날짜를 가져오고 string 타입을 hh:mm:ss 형식으로 변환 후 현재 날짜와 합쳐 필드에 추가
 ```yml
- ruby {
+  ruby {
     code => '
       cntg_hour = event.get("STCK_CNTG_HOUR")
       if cntg_hour
@@ -206,7 +206,7 @@ filter {
   }
 
   mutate {
-    remove_field => ["ecs", "host", "@version", "agent", "log", "input", "message", "@timestamp"]
+    remove_field => ["ecs", "host", "@version", "agent", "log", "input", "message", "@timestamp", "tags"]
   }
 }
 ```
