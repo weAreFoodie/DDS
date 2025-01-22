@@ -121,6 +121,7 @@ ELK-Stack의 실시간 데이터 처리 및 시각화 기능을 활용하여 국
 
 ### Mysql
 **테이블 명: stock_kr_trade**
+<br>
 ![stock - kr_stock_trade](https://github.com/user-attachments/assets/5ba73d83-be57-44c4-a399-f2289e9cd4d2)
 
 ---
