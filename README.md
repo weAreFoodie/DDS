@@ -28,6 +28,13 @@ ELK-Stack의 최대 장점인 실시간, 대용량 데이터 처리와 더불어
 ## 📒**프로젝트 설명**
 ELK-Stack의 실시간 데이터 처리 및 시각화 기능을 활용하여 국내 주식의 실시간 체결 데이터를 분석하고 시각화하는 시스템을 구현하였습니다.
 
+### 활용 데이터
+- 한국 투자 Open API에서 국내 주식 실시간체결가 API 사용
+- [한국 투자 Open API 문서](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-real2#L_714d1437-8f62-43db-a73c-cf509d3f6aa7)
+- [파이썬으로 배우는 한국투자증권 Websocket 사용 예제](https://wikidocs.net/book/7847)
+- [실시간시세(웹소켓) 파이썬 샘플코드](https://github.com/koreainvestment/open-trading-api/blob/main/websocket/python/ws_domestic_overseas_all.py)
+
+
 ### 데이터 처리 및 저장 구조
 
 **1. 실시간 데이터 처리 및 시각화**
